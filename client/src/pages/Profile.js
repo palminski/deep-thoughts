@@ -10,17 +10,19 @@ import ThoughtForm from '../components/ThoughtForm';
 
 
 const Profile = () => {
-  const {username: userParams} = useParams();
+  const {username: userParam} = useParams();
 
-  const {loading, data} = useQuery(userParams ? QUERY_USER : QUERY_ME, {
-    variables: {username: userParams}
+  const {loading, data} = useQuery(userParam ? QUERY_USER : QUERY_ME, {
+    variables: {username: userParam}
   });
 
+  console.log(data);
+  
   const user = data?.me || data?.user || {};
-
+  console.log(user.thoughts);
   const [addFriend] = useMutation(ADD_FRIEND);
 
-  if (Auth.loggedIn() && Auth.getProfile().data.username === userParams) {
+  if (Auth.loggedIn() && Auth.getProfile().data.username === userParam) {
     return <Navigate to="/profile" />;
   }
 
@@ -48,11 +50,11 @@ const Profile = () => {
     <div>
       <div className="flex-row mb-3">
         <h2 className="bg-dark text-secondary p-3 display-inline-block">
-          Viewing {userParams ? `{user.username}'s` : 'your'} profile.
+          Viewing {userParam ? `${user.username}'s` : 'your'} profile.
         </h2>
 
 
-        {userParams && (
+        {userParam && (
           <button className='btn ml-auto' onClick={handleClick}>
             Add Friend
           </button>
@@ -74,7 +76,7 @@ const Profile = () => {
           />
         </div>
       </div>
-      <div className='mb-3'>{!userParams && <ThoughtForm/>}</div>
+      <div className='mb-3'>{!userParam && <ThoughtForm/>}</div>
     </div>
   );
 };

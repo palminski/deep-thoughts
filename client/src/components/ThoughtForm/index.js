@@ -1,4 +1,7 @@
 import React, {useState} from 'react';
+import { useMutation } from '@apollo/client';
+import {ADD_THOUGHT} from '../../utils/mutations';
+import {QUERY_THOUGHTS, QUERY_ME} from '../../utils/queries';
 
 const ThoughtForm = () => {
 
@@ -14,14 +17,49 @@ const ThoughtForm = () => {
 
     const handleFormSubmit = async event => {
         event.preventDefault();
-        setText('');
-        setCharacterCount(0);
+
+        try {
+            await addThought({
+                variables: {thoughtText}
+            });
+            setText('');
+            setCharacterCount(0);
+        }
+        catch (e)
+        {
+            console.error(e);
+        }
     };
+
+    const [addThought, {error}] = useMutation(ADD_THOUGHT, {
+        update(cache, {data:{addThought}}) {
+
+            try {
+                const {me} = cache.readQuery({query: QUERY_ME});
+                cache.writeQuery({
+                    query: QUERY_ME,
+                    data: {me: {...me,thoughts:[...me.thoughts, addThought]}},
+                });
+            } catch (e) {
+                console.warn('First thought insertion by user!');
+            }
+
+            //read what is currently in cache
+            const { thoughts } = cache.readQuery({query: QUERY_THOUGHTS});
+
+            //prepend newest thought to the front of the array
+            cache.writeQuery({
+                query: QUERY_THOUGHTS,
+                data: {thoughts: [addThought, ...thoughts]}
+            });
+        }
+    });
 
     return (
         <div>
             <p className={`m-0 ${characterCount ===280 ? 'text-error' : ''}`}>
                 Character Count: {characterCount}/280
+                {error && <span className='ml-2'>Something went wrong...</span>}
             </p>
             <form className='flex-row justify-center justify-space-between-md align-stretch' onSubmit={handleFormSubmit}>
                 <textarea
