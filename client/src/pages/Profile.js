@@ -1,22 +1,25 @@
 import React from 'react';
 import {Navigate, useParams} from 'react-router-dom';
+
 import ThoughtList from '../components/ThoughtList';
+import ThoughtForm from '../components/ThoughtForm';
 import FriendList from '../components/FriendList';
+
 import {useMutation, useQuery} from '@apollo/client';
 import {QUERY_USER, QUERY_ME} from '../utils/queries';
 import Auth from '../utils/auth';
 import {ADD_FRIEND} from '../utils/mutations';
-import ThoughtForm from '../components/ThoughtForm';
 
 
-const Profile = () => {
+
+const Profile = (props) => {
   const {username: userParam} = useParams();
 
   const {loading, data} = useQuery(userParam ? QUERY_USER : QUERY_ME, {
     variables: {username: userParam}
   });
 
-  console.log(data);
+  // console.log(data);
   
   const user = data?.me || data?.user || {};
   console.log(user.thoughts);
